@@ -74,7 +74,7 @@ FastAPI automatically generates a Swagger UI page based on the OpenAPI specifica
 
 ### Main Swagger UI Dashboard
 <!-- Replace the path below with your actual screenshot path -->
-![Swagger UI Dashboard](docs/images/swagger_main.png)
+![Swagger UI Dashboard](images/swaggerUI.png)
 
 ### 📂 Full API Functionality Gallery
 
@@ -82,13 +82,13 @@ FastAPI automatically generates a Swagger UI page based on the OpenAPI specifica
 
 | Stage / Feature | Screenshot |
 | :--- | :--- |
-| **Stage 1: Root & Health Check** (`GET`) | ![Root & Health Check](docs/images/stage1_root.png) |
-| **Stage 2: Read All Tasks** (`GET`) | ![Read All Tasks](docs/images/stage2_read.png) |
-| **Stage 3: Create Task** (`POST 201`) | ![Create Task](docs/images/stage3_create.png) |
-| **Stage 3: Validation Error** (`POST 400`) | ![Validation Error](docs/images/stage3_400.png) |
-| **Stage 4: Update Task** (`PUT 200`) | ![Update Task](docs/images/stage4_update.png) |
-| **Stage 4: Delete Task** (`DELETE 204`) | ![Delete Task](docs/images/stage4_delete.png) |
-| **Error Handling: Unknown ID** (`404 Not Found`) | ![Unknown ID Error](docs/images/error_404.png) |
-| **Terminal / Curl Logs** | ![Terminal Logs](docs/images/terminal_logs.png) |
+| **Stage 1: Root & Health Check** (`GET`) | ![Root & Health Check](images/rootHealth.png) |
+| **Stage 2: Read All Tasks** (`GET`) | ![Read All Tasks](images/allTask.png) |
+| **Stage 3: Create Task** (`POST 201`) | ![Create Task](images/createTask.png) |
+| **Stage 3: Validation Error** (`POST 400`) | ![Validation Error](images/errorVal.png) |
+| **Stage 4: Update Task** (`PUT 200`) | ![Update Task](images/updateTask.png) |
+| **Stage 4: Delete Task** (`DELETE 204`) | ![Delete Task](images/deleteTask.png) |
+| **Error Handling: Unknown ID** (`404 Not Found`) | ![Unknown ID Error](images/error_404.png) |
+<!-- | **Terminal / Curl Logs** | ![Terminal Logs](docs/images/terminal_logs.png) |
 | **Additional View 1** | ![Additional View 1](docs/images/view1.png) |
-| **Additional View 2** | ![Additional View 2](docs/images/view2.png) |
+| **Additional View 2** | ![Additional View 2](docs/images/view2.png) | -->
