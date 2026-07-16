@@ -74,7 +74,7 @@ FastAPI automatically generates a Swagger UI page based on the OpenAPI specifica
 
 ### Main Swagger UI Dashboard
 <!-- Replace the path below with your actual screenshot path -->
-![Swagger UI Dashboard](images/swaggerUI.png)
+![Swagger UI Dashboard](images/SwaggerUI.png)
 
 ### 📂 Full API Functionality Gallery
 
