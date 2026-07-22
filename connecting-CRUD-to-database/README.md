@@ -213,7 +213,7 @@ dbeaver-database-viewer.png
 Or use Markdown once the image is added:
 
 ```markdown
-![DBeaver Database Viewer](/images/dbeaver-database-viewer.png)
+![DBeaver Database Viewer](images/dbeaver-database-viewer.png)
 ```
 
 ---
@@ -232,7 +232,7 @@ dbeaver-sql-query.png
 Or use Markdown once the image is added:
 
 ```markdown
-![SQL Query Executed](/images/dbeaver-sql-query.png)
+![SQL Query Executed](images/dbeaver-sql-query.png)
 ```
 
 ---
