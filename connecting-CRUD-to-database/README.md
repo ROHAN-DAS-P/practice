@@ -201,39 +201,19 @@ WHERE done = 1;
 
 ## 1. DBeaver CE Database Viewer
 
-> Replace the placeholder below with your database viewer screenshot.
 
-```
-Insert Screenshot Here
 
-Suggested filename:
-dbeaver-database-viewer.png
-```
-
-Or use Markdown once the image is added:
-
-```markdown
 ![DBeaver Database Viewer](images/dbeaver-database-viewer.png)
-```
+
 
 ---
 
 ## 2. SQL Query Executed in DBeaver CE
 
-> Replace the placeholder below with the screenshot showing the SQL query execution.
 
-```
-Insert Screenshot Here
 
-Suggested filename:
-dbeaver-sql-query.png
-```
-
-Or use Markdown once the image is added:
-
-```markdown
 ![SQL Query Executed](images/dbeaver-sql-query.png)
-```
+
 
 ---
 
