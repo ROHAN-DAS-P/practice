@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from supabase import create_client, Client
 
@@ -42,15 +42,10 @@ def health_check():
 
 @app.post("/auth/signup", status_code=201, summary="Create a new user account")
 def sign_up(payload: dict):
-    """
-    Registers a new user with Supabase Auth.
-    - Validates that email and password are provided.
-    - Returns 201 Created with user metadata on success.
-    """
+    """Registers a new user with Supabase Auth."""
     email = payload.get("email")
     password = payload.get("password")
 
-    # Business Rule #1: Server never trusts the client. Validate input immediately.
     if not email or not password or not str(email).strip() or not str(password).strip():
         return JSONResponse(
             status_code=400,
@@ -58,13 +53,10 @@ def sign_up(payload: dict):
         )
 
     try:
-        # Pass credentials to Supabase Identity Provider
         response = supabase.auth.sign_up({
             "email": str(email).strip(),
             "password": str(password).strip()
         })
-        
-        # Format the user receipt
         user_data = {
             "id": response.user.id if response.user else None,
             "email": response.user.email if response.user else email,
@@ -75,22 +67,15 @@ def sign_up(payload: dict):
             content={"message": "User registered successfully.", "user": user_data}
         )
     except Exception as e:
-        # Catch Supabase rejections (e.g., weak password, invalid email format)
         return JSONResponse(status_code=400, content={"error": str(e)})
 
 
 @app.post("/auth/login", summary="Authenticate and obtain a JWT")
 def log_in(payload: dict):
-    """
-    Authenticates a user and issues a JSON Web Token (JWT).
-    - Returns 400 if fields are empty.
-    - Returns 401 if Supabase rejects the login credentials.
-    - Returns 200 with access_token (JWT) on success.
-    """
+    """Authenticates a user and issues a JSON Web Token (JWT)."""
     email = payload.get("email")
     password = payload.get("password")
 
-    # Validate empty inputs
     if not email or not password or not str(email).strip() or not str(password).strip():
         return JSONResponse(
             status_code=400,
@@ -98,7 +83,6 @@ def log_in(payload: dict):
         )
 
     try:
-        # Request Supabase to verify credentials and issue a session token
         response = supabase.auth.sign_in_with_password({
             "email": str(email).strip(),
             "password": str(password).strip()
@@ -107,7 +91,6 @@ def log_in(payload: dict):
         if not response.session:
             return JSONResponse(status_code=401, content={"error": "Invalid login credentials"})
 
-        # Return the JWT access token and refresh token
         return {
             "access_token": response.session.access_token,
             "refresh_token": response.session.refresh_token,
@@ -115,5 +98,46 @@ def log_in(payload: dict):
             "expires_in": response.session.expires_in
         }
     except Exception:
-        # If Supabase throws an AuthApiError (wrong password/user not found), return 401
         return JSONResponse(status_code=401, content={"error": "Invalid login credentials"})
+
+# --- STAGE 2: PUBLIC & PROTECTED GATES ---
+
+@app.get("/public/info", summary="Read public, open data")
+def public_info():
+    """
+    A completely open endpoint. No authentication required.
+    """
+    return {"message": "Welcome stranger! This info is public."}
+
+
+@app.get("/protected/profile", summary="Read private profile data (Unverified Gate)")
+def protected_profile(request: Request):
+    """
+    A protected gate that checks for the presence of a Bearer token.
+    - Returns 401 if the Authorization header is missing or malformed.
+    - Returns a placeholder success message if a token string is present.
+    """
+    auth_header = request.headers.get("Authorization")
+
+    # Business Rule: Header must exist, must start with 'Bearer ', and must have a token after the space
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(
+            status_code=401,
+            content={"error": "Access token required"}
+        )
+
+    # Extract the token string (everything after 'Bearer ')
+    token = auth_header.split(" ")[1].strip()
+
+    if not token:
+        return JSONResponse(
+            status_code=401,
+            content={"error": "Access token required"}
+        )
+
+    # Stage 2 Placeholder: We confirm a token was presented. 
+    # (In Stage 3, we will pass this token to Supabase for cryptographic verification!)
+    return {
+        "message": "Token presented successfully.",
+        "token_preview": f"{token[:10]}... (Unverified in Stage 2)"
+    }
