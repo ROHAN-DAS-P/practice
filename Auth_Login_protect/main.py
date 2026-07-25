@@ -100,44 +100,62 @@ def log_in(payload: dict):
     except Exception:
         return JSONResponse(status_code=401, content={"error": "Invalid login credentials"})
 
-# --- STAGE 2: PUBLIC & PROTECTED GATES ---
+# --- STAGE 2 & 3: PUBLIC & PROTECTED GATES ---
 
 @app.get("/public/info", summary="Read public, open data")
 def public_info():
-    """
-    A completely open endpoint. No authentication required.
-    """
+    """A completely open endpoint. No authentication required."""
     return {"message": "Welcome stranger! This info is public."}
 
 
-@app.get("/protected/profile", summary="Read private profile data (Unverified Gate)")
+@app.get("/protected/profile", summary="Read private profile data (Verified Gate)")
 def protected_profile(request: Request):
     """
-    A protected gate that checks for the presence of a Bearer token.
-    - Returns 401 if the Authorization header is missing or malformed.
-    - Returns a placeholder success message if a token string is present.
+    A protected gate that mathematically verifies the Bearer token with Supabase.
+    - Returns 401 if the header is missing or malformed.
+    - Returns 401 if the token is expired, tampered with, or invalid.
+    - Returns 200 with safe user metadata on success.
     """
     auth_header = request.headers.get("Authorization")
 
-    # Business Rule: Header must exist, must start with 'Bearer ', and must have a token after the space
+    # Step 1: Check if the token was presented cleanly
     if not auth_header or not auth_header.startswith("Bearer "):
         return JSONResponse(
             status_code=401,
             content={"error": "Access token required"}
         )
 
-    # Extract the token string (everything after 'Bearer ')
+    # Extract the raw token string
     token = auth_header.split(" ")[1].strip()
-
     if not token:
         return JSONResponse(
             status_code=401,
             content={"error": "Access token required"}
         )
 
-    # Stage 2 Placeholder: We confirm a token was presented. 
-    # (In Stage 3, we will pass this token to Supabase for cryptographic verification!)
-    return {
-        "message": "Token presented successfully.",
-        "token_preview": f"{token[:10]}... (Unverified in Stage 2)"
-    }
+    # Step 2: Ask Supabase to verify the cryptographic signature and expiration
+    try:
+        response = supabase.auth.get_user(token)
+        
+        if not response.user:
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Invalid or expired token"}
+            )
+
+        # Step 3: Grant access and return safe metadata
+        return {
+            "message": "Access granted. Welcome to the VIP room!",
+            "user": {
+                "id": response.user.id,
+                "email": response.user.email,
+                "created_at": str(response.user.created_at)
+            }
+        }
+    except Exception:
+        # If Supabase rejects the token (forgery, altered string, expired session),
+        # catch the exception and deny access immediately.
+        return JSONResponse(
+            status_code=401,
+            content={"error": "Invalid or expired token"}
+        )
