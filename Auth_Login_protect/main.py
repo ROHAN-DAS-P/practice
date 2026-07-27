@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Depends, Response
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client, Client
 
 # 1. Load secrets and initialize Supabase
@@ -20,7 +21,7 @@ except Exception as e:
 # 2. Initialize FastAPI App
 app = FastAPI(
     title="Auth Guard API",
-    description="A secure API protected by Supabase JWT Authentication.",
+    description="A secure API protected by Supabase JWT Authentication with Swagger UI support.",
     version="1.0.0"
 )
 
@@ -30,21 +31,20 @@ def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
 
 
-# --- STAGE 4: THE REUSABLE AUTH MIDDLEWARE GUARD ---
+# --- STAGE 5: SWAGGER UI SECURITY SCHEME ---
+# Setting auto_error=False lets us keep our custom 401 JSON error messages
+security = HTTPBearer(auto_error=False)
 
-def get_current_user(request: Request):
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
-    Reusable FastAPI dependency that inspects the Authorization header,
-    verifies the JWT against Supabase, and returns the authenticated user.
+    Stage 5 Upgraded Dependency:
+    - Uses HTTPBearer so FastAPI generates the Authorize padlock icon in Swagger UI.
+    - Verifies the extracted token cryptographically with Supabase.
     """
-    auth_header = request.headers.get("Authorization")
-    
-    if not auth_header or not auth_header.startswith("Bearer "):
+    if not credentials or not credentials.credentials:
         raise HTTPException(status_code=401, detail="Access token required")
     
-    token = auth_header.split(" ")[1].strip()
-    if not token:
-        raise HTTPException(status_code=401, detail="Access token required")
+    token = credentials.credentials
         
     try:
         # Cryptographically verify the token with Supabase
@@ -114,7 +114,7 @@ def log_in(payload: dict):
         raise HTTPException(status_code=401, detail="Invalid login credentials")
 
 
-# --- STAGE 4: PROTECTED ROUTES & LOGOUT ---
+# --- STAGE 4 & 5: PROTECTED ROUTES & LOGOUT ---
 
 @app.post("/auth/logout", status_code=204, summary="End the user's session")
 def log_out(user = Depends(get_current_user)):
@@ -124,7 +124,7 @@ def log_out(user = Depends(get_current_user)):
     try:
         supabase.auth.sign_out()
     except Exception:
-        pass  # Return 204 No Content regardless of SDK network hiccups
+        pass
     return Response(status_code=204)
 
 
@@ -136,7 +136,7 @@ def public_info():
 @app.get("/protected/profile", summary="Read private profile data")
 def protected_profile(user = Depends(get_current_user)):
     """
-    Protected route using the reusable auth guard.
+    Protected route: Now features the Swagger UI padlock icon!
     """
     return {
         "message": "Access granted. Welcome to the VIP room!",
@@ -148,10 +148,10 @@ def protected_profile(user = Depends(get_current_user)):
     }
 
 
-@app.get("/protected/dashboard", summary="User dashboard (Checkpoint Route)")
+@app.get("/protected/dashboard", summary="User dashboard")
 def protected_dashboard(user = Depends(get_current_user)):
     """
-    Second protected route using the exact same reusable guard with zero new auth code.
+    Second protected route sharing the exact same HTTPBearer security scheme.
     """
     return {
         "message": f"Welcome to your dashboard, {user.email}!",
