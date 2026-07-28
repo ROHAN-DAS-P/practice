@@ -1,17 +1,21 @@
 from fastapi import FastAPI
-from .import models
+from . import models
 from .database import engine
+from .routers import post
+from .config import settings
 
-models.Base.metadata.create_all(bind=engine)
+
+# models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
+
+
+app.include_router(post.router)
+
+
+
 @app.get("/")
-async def read_root():
-    return {"Hello": "World to all"}
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
+def root():
+    return {"message": "Hello World pushing out to ubuntu"}
